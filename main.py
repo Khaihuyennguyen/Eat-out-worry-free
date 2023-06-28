@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+
+@author: Khai Nguyen
+"""
 import streamlit as st
 import pandas as pd
 import pulp
