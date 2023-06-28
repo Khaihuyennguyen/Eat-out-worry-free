@@ -1,6 +1,5 @@
-
-pulp==2.5.0=py39h6e9494a_0
+streamlit
+pulp
 pandas
 circlify
 matplotlib
-streamlit
