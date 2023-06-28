@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import pulp
 from pulp import *
 import matplotlib.pyplot as plt
 import circlify
