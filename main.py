@@ -1,106 +1,88 @@
 # -*- coding: utf-8 -*-
 """
+Created on Wed Aug 31 11:16:51 2022
 
-@author: Khai Nguyen
+@author: avery
 """
+
 import streamlit as st
 import pandas as pd
-import pulp
 from pulp import *
 import matplotlib.pyplot as plt
 import circlify
 import random
 
-st.title('The Eat-out-worry-free Tool')
+st.title('The McDonalds McHealthy Tool')
 st.text('''
-        Use this tool for calculate calories for your order
+        McDonald's isn't known for its healthy food, but I'm here to prove
+        that it can be healthy!This tool uses linear programming to find 
+        The best combination of food to hit your nutrition plan! Use the 
+        left hand side to define constraints & watch your combo change 
+        in the middle :)
         ''')
 
-fast_food_data = pd.read_csv('fastfood.csv')
+McData = pd.read_csv('menu.csv')
 
 
-RestaurantName_list = fast_food_data.restaurant.unique().tolist()
-
-RestaurantName = st.selectbox(
-    'Please choose your restaurant', RestaurantName_list,index=6
-    )
-
-st.write('You selected: ', RestaurantName)
-mask_restaurant = fast_food_data["restaurant"] == RestaurantName
-fast_food_data = fast_food_data[mask_restaurant]
 # Convert the item names to a list
-Menuitems = fast_food_data.item.tolist()
-
+MenuItems = McData.Item.tolist()
 # Convert all of the macro nutrients fields to be dictionaries of the item names
-TotalFat        =      fast_food_data.set_index('item')['total_fat'].to_dict()
-calories        =      fast_food_data.set_index('item')['calories'].to_dict()
-SaturatedFat    =      fast_food_data.set_index('item')['sat_fat'].to_dict()
-total_carb   =         fast_food_data.set_index('item')['total_carb'].to_dict()
-sugar          =       fast_food_data.set_index('item')['sugar'].to_dict()
-protein         =      fast_food_data.set_index('item')['protein'].to_dict()
-sodium          =      fast_food_data.set_index('item')['sodium'].to_dict()
+Calories = McData.set_index('Item')['Calories'].to_dict()
+TotalFat = McData.set_index('Item')['Total Fat'].to_dict()
+SaturatedFat = McData.set_index('Item')['Saturated Fat'].to_dict()
+Carbohydrates = McData.set_index('Item')['Carbohydrates'].to_dict()
+Sugars = McData.set_index('Item')['Sugars'].to_dict()
+Protein = McData.set_index('Item')['Protein'].to_dict()
+Sodium = McData.set_index('Item')['Sodium'].to_dict()
 
-# Using Linear Optimization to minimize the calories intakes
 
-prob = LpProblem("Fastfood Optimization Problem", LpMinimize)
+prob = LpProblem("McOptimization Problem", LpMinimize)
 
-Menuitems_vars = LpVariable.dicts("Menuitems", Menuitems, lowBound=0,
+MenuItems_vars = LpVariable.dicts("MenuItems", MenuItems, lowBound=0,
                                   upBound=15, cat='Integer')
 
-# Setting up the sidebar for the combinations
+
 st.sidebar.write('Limits for Combo')
-TotalFat_val = st.sidebar.slider(
-    'Max Fat', min_value=0, max_value=141, value=5)
-# TotalFat_val    =  st.sidebar.number_input('Max Fat', value=140)
-SatFat_val = st.sidebar.slider(
-    'Max Sat Fat', min_value=0, max_value=47, value=3)
+TotalFat_val = st.sidebar.number_input('Total Fat Max', value=70)
+SatFat_val = st.sidebar.number_input('Saturated Fat Max', value=20)
 
-SugarMin = st.sidebar.slider(
-    'Sugar Min', min_value=0, max_value=87,  value=0)
-SugarMax = st.sidebar.slider(
-    'Sugar Max', min_value=0, max_value=87,  value=5)
+SugarMin = st.sidebar.number_input('Suguar Min', value=80)
+SugarMax = st.sidebar.number_input('Sugar Max', value=100)
 
-CarbsMin = st.sidebar.slider(
-    'Total Carb Min', min_value=0, max_value=156,  value=0)
-CarbsMax = st.sidebar.slider(
-    'Total Carb Max', min_value=0, max_value=156,  value=10)
-proteinMin = st.sidebar.slider(
-    'Protein Min', min_value=1, max_value=186, value=18)
-proteinMax = st.sidebar.slider(
-    'Protein Max', min_value=1, max_value=186,  value=43)
+CarbsMin = st.sidebar.number_input('Carbohydrates Min', value=260)
 
-sodiumMax = st.sidebar.slider(
-    'sodium Max', min_value=15, max_value=6080, value=503)
+ProtienMin = st.sidebar.number_input('Protien Min', value=45)
+ProtienMax = st.sidebar.number_input('Protien Max', value=85)
+
+SodiumMax = st.sidebar.number_input('Sodium Max', value=10)
 
 
 # First entry is the calorie calculation (this is our objective)
-prob += lpSum([calories[i]*Menuitems_vars[i] for i in Menuitems]), "calories"
-# total_fat must be <= 70 g
-prob += lpSum([TotalFat[i]*Menuitems_vars[i]
-              for i in Menuitems]) <= TotalFat_val, "TotalFat"
+prob += lpSum([Calories[i]*MenuItems_vars[i] for i in MenuItems]), "Calories"
+# Total Fat must be <= 70 g
+prob += lpSum([TotalFat[i]*MenuItems_vars[i]
+              for i in MenuItems]) <= TotalFat_val, "TotalFat"
 # Saturated Fat is <= 20 g
-prob += lpSum([SaturatedFat[i]*Menuitems_vars[i]
-              for i in Menuitems]) <= SatFat_val, "Saturated Fat"
-# total_carb must be more than 260 g
-prob += lpSum([total_carb[i]*Menuitems_vars[i]
-              for i in Menuitems]) >= CarbsMin, "total_carb_lower"
-prob += lpSum([total_carb[i]*Menuitems_vars[i]
-              for i in Menuitems]) <= CarbsMax, "total_carb_upper"
+prob += lpSum([SaturatedFat[i]*MenuItems_vars[i]
+              for i in MenuItems]) <= SatFat_val, "Saturated Fat"
+# Carbohydrates must be more than 260 g
+prob += lpSum([Carbohydrates[i]*MenuItems_vars[i]
+              for i in MenuItems]) >= CarbsMin, "Carbohydrates_lower"
 # Sugar between 80-100 g
-prob += lpSum([sugar[i]*Menuitems_vars[i]
-              for i in Menuitems]) >= SugarMin, "sugar_lower"
-prob += lpSum([sugar[i]*Menuitems_vars[i]
-              for i in Menuitems]) <= SugarMax, "sugar_upper"
-# protein between 45-55g
-prob += lpSum([protein[i]*Menuitems_vars[i]
-              for i in Menuitems]) >= proteinMin, "protein_lower"
-prob += lpSum([protein[i]*Menuitems_vars[i]
-              for i in Menuitems]) <= proteinMax, "protein_upper"
-# sodium <= 6000 mg
-prob += lpSum([sodium[i]*Menuitems_vars[i]
-              for i in Menuitems]) <= sodiumMax*1000, "sodium"
+prob += lpSum([Sugars[i]*MenuItems_vars[i]
+              for i in MenuItems]) >= SugarMin, "Sugars_lower"
+prob += lpSum([Sugars[i]*MenuItems_vars[i]
+              for i in MenuItems]) <= SugarMax, "Sugars_upper"
+# Protein between 45-55g
+prob += lpSum([Protein[i]*MenuItems_vars[i]
+              for i in MenuItems]) >= ProtienMin, "Protein_lower"
+prob += lpSum([Protein[i]*MenuItems_vars[i]
+              for i in MenuItems]) <= ProtienMax, "Protein_upper"
+# Sodium <= 6000 mg
+prob += lpSum([Sodium[i]*MenuItems_vars[i]
+              for i in MenuItems]) <= SodiumMax*1000, "Sodium"
 
-# Use Linear Optimization
+
 prob.solve()
 
 
@@ -121,10 +103,10 @@ varsdict = {}
 for v in prob.variables():
     if v.varValue > 0:
         varsdict[v.name] = v.varValue
+df_results = pd.DataFrame([varsdict])
 
 
-
-st.header('Total calories: ' + str(objective_function_value))
+st.header('Total Calories: ' + str(objective_function_value))
 
 
 # Create just a figure and only one subplot
@@ -171,9 +153,9 @@ for circle, label in zip(circles, labels):
 
 st.pyplot(fig)
 
-st.subheader('Created by Khai Nguyen')
-st.text('Please use this as a reference only.')
+st.subheader('Created by Avery Smith')
+st.text('Part of his 30 Data Science Proejcts in 30 Days')
 st.caption(
     'Get the code [here](https://www.datacareerjumpstart.com/30projectsresourcesignup)')
 st.caption(
-    'My [LinkedIn] profile (https://www.linkedin.com/in/kh-ai/)')
+    'Inspiration from [Kyle Pastor](https://www.datacareerjumpstart.com/30projectsresourcesignup)')
