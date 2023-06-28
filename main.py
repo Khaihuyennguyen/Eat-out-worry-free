@@ -133,7 +133,7 @@ st.header('Total calories: ' + str(objective_function_value))
 fig, ax = plt.subplots(figsize=(15, 10))
 
 # Title
-ax.set_title('McHealthy Combo')
+ax.set_title('Your Combo')
 
 # Remove axes
 ax.axis('off')
@@ -176,6 +176,6 @@ st.pyplot(fig)
 st.subheader('Created by Khai Nguyen')
 st.text('Please use this as a reference only.')
 st.caption(
-    'Get the code [here](https://www.datacareerjumpstart.com/30projectsresourcesignup)')
+    'Get the code [here](https://github.com/Khaihuyennguyen/Eat-out-worry-free/)')
 st.caption(
     'My [LinkedIn profile] (https://www.linkedin.com/in/kh-ai/)')
