@@ -26,7 +26,7 @@
     <a href="https://github.com/Khaihuyennguyen/Eat-out-worry-free"><strong>Explore the repo »</strong></a>
     <br />
     <br />
-    <a href="https://eat-out-worry-free-gc3on1p45.streamlit.app/">View Website</a>
+    <a href="https://eat-out-worry-free.streamlit.app/">View Website</a>
     ·
     <a href="https://github.com/Khaihuyennguyen/Eat-out-worry-free/issues">Report Bug</a>
     ·
